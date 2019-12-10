@@ -1,5 +1,7 @@
 # usage:
-#   python part2.py <image width> <image height> <image file>
+#   python part2.py <image width> <image height> <image file> <output image>
+
+from PIL import Image
 
 import sys
 
@@ -7,7 +9,7 @@ black = 0
 white = 1
 transparent = 2
 
-class Image:
+class ImageData:
     def __init__(self, w, h):
         self.w = w
         self.h = h
@@ -21,18 +23,23 @@ class Image:
             if color != transparent:
                 self.image[x][y] = color
 
-    def output(self, output=sys.stdout):
-        characters = {
-            black: ' ',
-            white: '*',
-            transparent: ' ',
+    def output(self, filename):
+        colors = {
+            black: (0, 0, 0, 255),
+            white: (255, 255, 255, 255),
+            transparent: (0, 0, 0, 0),
         }
 
+        scale = 16
+        width = self.w * scale
+        height = self.h * scale
+        im = Image.new('RGBA', (width, height), color=None)
         for y in range(self.h):
             for x in range(self.w):
-                color = self.image[x][y]
-                output.write(characters[color])
-            output.write('\n')
+                for i in range(scale):
+                    for j in range(scale):
+                        im.putpixel((x*scale+i, y*scale+j), colors[self.image[x][y]])
+        im.save(filename)
 
 if __name__ == "__main__":
     width = int(sys.argv[1])
@@ -49,8 +56,8 @@ if __name__ == "__main__":
             count = count + 1
             layers.append(layer)
 
-    image = Image(width, height)
+    image = ImageData(width, height)
     for layer in reversed(layers):
         image.render(layer)
 
-    image.output()
+    image.output(sys.argv[4])
