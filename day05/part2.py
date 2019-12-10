@@ -1,3 +1,6 @@
+# usage:
+#   python part2.py <program>
+
 import operator
 import sys
 
