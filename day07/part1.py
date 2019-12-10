@@ -1,14 +1,16 @@
 # usage:
-#   python part1.py <program file> <phase setting sequence>
+#   python part1.py <program file> [phase setting sequence]
 #
-# run like:
-#   python permutations.py | xargs -n 1 python part1.py input.txt | sort --numeric-sort
-#
-# (last line of result is correct result)
+# (if the phase setting sequence is omitted, the maximal setting is output)
 
 import operator
 import os
 import sys
+
+from threading import Thread
+
+def write_line(fd, arg):
+    os.write(fd, "{}\n".format(arg))
 
 def load(file):
     program = []
@@ -26,7 +28,7 @@ def position_mode(program, index):
 def immediate_mode(value):
     return value
 
-def run(program):
+def run(program, input_fd, output_fd):
     operators = {
         1: operator.add,
         2: operator.mul,
@@ -36,6 +38,8 @@ def run(program):
         0: lambda param: position_mode(program, param),
         1: lambda param: immediate_mode(param),
     }
+
+    infile = os.fdopen(os.dup(input_fd))
 
     index = 0
     while True:
@@ -59,11 +63,10 @@ def run(program):
             index = index + 4
         elif opcode == 3:
             result_index = program[index+1]
-            inp = sys.stdin.readline()
-            program[result_index] = int(inp)
+            program[result_index] = int(infile.readline())
             index = index + 2
         elif opcode == 4:
-            print getters[mode1](program[index+1])
+            write_line(output_fd, getters[mode1](program[index+1]))
             index = index + 2
         elif opcode == 5:
             value1 = getters[mode1](program[index+1])
@@ -100,37 +103,43 @@ def run(program):
         else:
             pass
 
-def read_all(fd):
-    str = ""
-    s = os.read(fd, 1)
-    while len(s) > 0:
-        if s.isspace():
-            break
-        str = str + s
-        s = os.read(fd, 1)
-    return str
-
 def test(program, phases):
     input = 0
     output = 1
     pipes = [os.pipe() for i in range(len(phases)+1)]
+    threads = []
     for i, phase in enumerate(phases):
-        if os.fork() == 0:
-            os.dup2(pipes[i][input], sys.stdin.fileno())
-            os.dup2(pipes[i+1][output], sys.stdout.fileno())
-            run(program)
-            sys.exit(0)
-        else:
-            os.write(pipes[i][output], "{}\n".format(phase))
+        write_line(pipes[i][output], phase)
+        thread = Thread(target=run, args=(program[:], pipes[i][input], pipes[i+1][output]))
+        thread.start()
+        threads.append(thread)
 
-    os.write(pipes[0][output], "{}\n".format(0))
-    result = read_all(pipes[-1][input])
+    infile = os.fdopen(os.dup(pipes[-1][input]))
+
+    write_line(pipes[0][output], 0)
+    result = infile.readline()
+
+    for thread in threads:
+        thread.join()
 
     for pipe in pipes:
         os.close(pipe[input])
         os.close(pipe[output])
 
     return int(result)
+
+def permutations(sequence, length=None):
+    if length is None:
+        length = len(sequence)
+    if length == 1:
+        for x in sequence:
+            yield [x]
+    else:
+        for i, x in enumerate(sequence):
+            subsequence = sequence[:]
+            del subsequence[i]
+            for s in permutations(subsequence, length-1):
+                yield [x] + s
 
 def parse(str):
     return [int(c) for c in str.split(',')]
@@ -139,5 +148,13 @@ if __name__ == "__main__":
     with open(sys.argv[1], 'r') as file:
         program = load(file)
 
-    phases = parse(sys.argv[2])
-    print test(program, phases)
+    if len(sys.argv) > 2:
+        phases = parse(sys.argv[2])
+        print test(program, phases)
+    else:
+        max = 0
+        for phases in permutations([0,1,2,3,4]):
+            result = test(program, phases)
+            if result > max:
+                max = result
+        print max
