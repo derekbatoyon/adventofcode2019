@@ -8,7 +8,7 @@ import os
 import sys
 
 black = 0
-white = 0
+white = 1
 
 face_up = 0
 face_right = 1
