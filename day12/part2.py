@@ -1,6 +1,7 @@
 # usage:
 #   python part2.py <positions>
 
+import functools
 import operator
 import re
 import sys
@@ -84,4 +85,4 @@ if __name__ == "__main__":
         period = simulate([pos[axis] for pos in positions])
         combine_factors(factors, compute_factors(period))
 
-    print reduce(operator.mul, factors)
+    print functools.reduce(operator.mul, factors)
