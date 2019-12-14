@@ -1,8 +1,8 @@
 # usage:
 #   python part2.py <positions>
 
+import fractions
 import functools
-import operator
 import re
 import sys
 
@@ -51,38 +51,15 @@ def simulate(coordinates):
 
     return steps
 
-def compute_factors(n):
-    factors = []
-    while n % 2 == 0:
-        factors.append(2)
-        n /= 2
-    d = 3
-    while n > 1:
-        if n % d == 0:
-            factors.append(d)
-            n /= d
-        elif d*d > n:
-            factors.append(n)
-            break
-        else:
-            d += 2
-    return factors
-
-def combine_factors(list1, list2):
-    unique = list1[:]
-    for item in list2:
-        try:
-            unique.remove(item)
-        except ValueError:
-            list1.append(item)
+def lcm(a,b):
+    return (a*b) / fractions.gcd(a,b)
 
 if __name__ == "__main__":
     positions = load(sys.argv[1])
     d = len(positions[0])
 
-    factors = []
+    periods = []
     for axis in range(d):
-        period = simulate([pos[axis] for pos in positions])
-        combine_factors(factors, compute_factors(period))
+        periods.append(simulate([pos[axis] for pos in positions]))
 
-    print functools.reduce(operator.mul, factors)
+    print functools.reduce(lcm, periods)
