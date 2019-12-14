@@ -1,8 +1,11 @@
 # usage:
-#   python part1.py <map>
+#   python part1.py [file ...]
+#
+# The file operands are processed in command-line order.  If file is a single
+# dash (`-') or absent, reads from the standard input.
 
+import fileinput
 import math
-import sys
 
 def calculate_direction(p, q):
     x1 = p[0]
@@ -14,17 +17,16 @@ def calculate_direction(p, q):
         direction =  direction + 360
     return direction
 
-def load(filename):
+def load(fh):
     points = []
-    with open(filename, 'r') as file:
-        for y, line in enumerate(file):
-            for x, character in enumerate(line):
-                if character == '#':
-                    points.append((x, y))
+    for y, line in enumerate(fh):
+        for x, character in enumerate(line):
+            if character == '#':
+                points.append((x, y))
     return points
 
 if __name__ == "__main__":
-    points = load(sys.argv[1])
+    points = load(fileinput.input())
 
     max_detected = 0
     max_point = None

@@ -1,11 +1,14 @@
 # usage
-#   python part2.py < map.txt
+#   python part2.py [file ...]
+#
+# The file operands are processed in command-line order.  If file is a single
+# dash (`-') or absent, reads from the standard input.
 
-import sys
+import fileinput
 
-def load(file):
+def load(fh):
     orbits = {}
-    for orbit in file:
+    for orbit in fh:
         (orbitee, orbiter) = orbit.split(")", 1)
         orbiter = orbiter.strip()
         orbitee = orbitee.strip()
@@ -20,7 +23,7 @@ def orbit_count(orbits, orbiter, common = "COM"):
     return count
 
 if __name__ == "__main__":
-    orbits = load(sys.stdin)
+    orbits = load(fileinput.input())
 
     point1 = orbits["YOU"]
     point2 = orbits["SAN"]

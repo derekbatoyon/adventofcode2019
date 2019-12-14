@@ -1,6 +1,11 @@
 # usage:
-#   python part1.py <positions> [steps]
+#   python part1.py [-n] [file ...]
+#
+# The file operands are processed in command-line order.  If file is a single
+# dash (`-') or absent, reads from the standard input.  The n argument specifies
+# the number of steps to simulate (default: 10)
 
+import fileinput
 import re
 import sys
 
@@ -8,12 +13,8 @@ def parse(string):
     result = re.match('<x=([+-]?[0-9]*), y=([+-]?[0-9]*), z=([+-]?[0-9]*)>', string)
     return tuple(int(i) for i in result.group(1, 2, 3))
 
-def load(filename):
-    positions = dict()
-    with open(filename, 'r') as fh:
-        for index, line in enumerate(fh):
-            positions[index] = parse(line)
-    return positions
+def load(fh):
+    return {index: parse(line) for index, line in enumerate(fh)}
 
 def pairs(items):
     while len(items) > 1:
@@ -36,13 +37,18 @@ def compare(a, b):
     return 0
 
 if __name__ == "__main__":
-    positions = load(sys.argv[1])
+    steps = 10
+    steps_re = re.compile('-(\d*)$')
+    for index, arg in enumerate(sys.argv):
+        result = steps_re.match(arg)
+        if result:
+            steps = int(result.group(1))
+            del sys.argv[index]
+            break
+
+    positions = load(fileinput.input())
     n = len(positions)
     velocities = { i: (0, 0, 0) for i in range(n) }
-
-    steps = 10
-    if len(sys.argv) > 2:
-        steps = int(sys.argv[2])
 
     dump(0, positions, velocities)
     for step in range(1, steps+1):

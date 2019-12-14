@@ -1,5 +1,6 @@
 # usage:
-#   python part1.py <lower bound>-<upper bound>
+#   python part1.py lower_bound-upper_bound
+#
 # this produces all passwords matching criteria, count like:
 #   python part1.py 254032-789860 | wc -l
 

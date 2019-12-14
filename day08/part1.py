@@ -1,5 +1,5 @@
 # usage:
-#   python part1.py <image width> <image height> <image file>
+#   python part1.py width height image_file
 
 import sys
 
@@ -16,9 +16,9 @@ if __name__ == "__main__":
     pixels = width * height
 
     results = []
-    with open(sys.argv[3]) as input:
+    with open(sys.argv[3]) as fh:
         while True:
-            layer = input.read(pixels).strip()
+            layer = fh.read(pixels).strip()
             if len(layer) == 0:
                 break
             results.append(analyze(layer))

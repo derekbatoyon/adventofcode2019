@@ -1,16 +1,14 @@
 # usage:
-#   python part2.py < <program>
+#   python part2.py program_file
 
 import operator
 import sys
 
-def load(file):
+def load(fh):
     program = []
-    lines = file.readlines()
-    for line in lines:
+    for line in fh:
         for value in line.split(','):
-            value = value.strip()
-            if (len(value) > 0):
+            if len(value.strip()) > 0:
                 program.append(int(value))
     return program
 
@@ -45,7 +43,8 @@ def test(program):
     return None
 
 if __name__ == "__main__":
-    program = load(sys.stdin)
+    with open(sys.argv[1], 'r') as fh:
+        program = load(fh)
     result = test(program)
     if result:
         print result

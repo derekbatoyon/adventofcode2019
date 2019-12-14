@@ -1,5 +1,5 @@
 # usage:
-#   python part1.py <program>
+#   python part1.py program_file
 
 from threading import Thread
 
@@ -26,13 +26,11 @@ def move(location, orientation):
     }
     return movement[orientation](x, y)
 
-def load(file):
+def load(fh):
     program = []
-    lines = file.readlines()
-    for line in lines:
+    for line in fh:
         for value in line.split(','):
-            value = value.strip()
-            if (len(value) > 0):
+            if len(value.strip()) > 0:
                 program.append(int(value))
     return program
 
@@ -100,8 +98,8 @@ def run(program, input_fd, output_fd):
             index = index + 4
         elif opcode == 3:
             result_index = get(index+1)
-            input = os.read(input_fd, 1)
-            setters[mode1](result_index, int(input))
+            inp = os.read(input_fd, 1)
+            setters[mode1](result_index, int(inp))
             index = index + 2
         elif opcode == 4:
             os.write(output_fd, str(getters[mode1](program[index+1])))
@@ -154,8 +152,8 @@ def get_color(colors, location):
     return color
 
 if __name__ == "__main__":
-    with open(sys.argv[1], 'r') as file:
-        program = load(file)
+    with open(sys.argv[1], 'r') as fh:
+        program = load(fh)
 
     (robot_input, program_output) = os.pipe()
     (program_input, robot_output) = os.pipe()
@@ -186,15 +184,15 @@ if __name__ == "__main__":
     os.write(robot_output, str(colors[location]))
 
     while True:
-        input = os.read(robot_input, 1)
-        if input == '':
+        inp = os.read(robot_input, 1)
+        if inp == '':
             break
-        color = int(input)
+        color = int(inp)
 
-        input = os.read(robot_input, 1)
-        if input == '':
+        inp = os.read(robot_input, 1)
+        if inp == '':
             break
-        turn = int(input)
+        turn = int(inp)
 
         colors[location] = color
 

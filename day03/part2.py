@@ -1,10 +1,11 @@
 # usage:
-#   python part2.py < <wires>
-# (two wires, each on a separate line)
+#   python part2.py [file ...]
+#
+# The file operands are processed in command-line order.  If file is a single
+# dash (`-') or absent, reads from the standard input.  Only two lines of input
+# are read, one for each wire.
 
-import functools
-import operator
-import sys
+from fileinput import FileInput
 
 class segment:
     def __init__(self, p, q):
@@ -113,10 +114,9 @@ def countsteps(path, point):
     return steps
 
 if __name__ == "__main__":
-    line1 = sys.stdin.readline()
-    path1 = decode(line1)
-    line2 = sys.stdin.readline()
-    path2 = decode(line2)
+    fi = FileInput()
+    path1 = decode(fi.readline())
+    path2 = decode(fi.readline())
     points = intersections(path1, path2)
     result = countsteps(path1, points[0]) + countsteps(path2, points[0])
     for point in points[1:]:

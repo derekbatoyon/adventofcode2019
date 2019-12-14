@@ -1,7 +1,7 @@
 # usage:
-#   python part2.py <program file> <phase setting sequence>
+#   python part2.py program_file [phase_setting_sequence]
 #
-# (if the phase setting sequence is omitted, the maximal setting is output)
+# If the phase setting sequence is omitted, the maximal setting is calculated.
 
 import operator
 import os
@@ -12,13 +12,11 @@ from threading import Thread
 def write_line(fd, arg):
     os.write(fd, "{}\n".format(arg))
 
-def load(file):
+def load(fh):
     program = []
-    lines = file.readlines()
-    for line in lines:
+    for line in fh:
         for value in line.split(','):
-            value = value.strip()
-            if (len(value) > 0):
+            if len(value.strip()) > 0:
                 program.append(int(value))
     return program
 
@@ -105,33 +103,33 @@ def run(program, input_fd, output_fd):
     os.close(output_fd)
 
 def test(program, phases):
-    input = 0
-    output = 1
+    inpipe = 0
+    outpipe = 1
     pipes = [os.pipe() for i in range(len(phases)+1)]
     threads = []
     for i, phase in enumerate(phases):
-        write_line(pipes[i][output], phase)
-        thread = Thread(target=run, args=(program[:], pipes[i][input], pipes[i+1][output]))
+        write_line(pipes[i][outpipe], phase)
+        thread = Thread(target=run, args=(program[:], pipes[i][inpipe], pipes[i+1][outpipe]))
         thread.start()
         threads.append(thread)
 
-    infile = os.fdopen(os.dup(pipes[-1][input]))
+    infile = os.fdopen(os.dup(pipes[-1][inpipe]))
 
-    write_line(pipes[0][output], 0)
+    write_line(pipes[0][outpipe], 0)
     result = None
     while True:
         line = infile.readline()
         if len(line) == 0:
             break
         result = line
-        write_line(pipes[0][output], int(result))
+        write_line(pipes[0][outpipe], int(result))
 
     for thread in threads:
         thread.join()
 
-    os.close(pipes[0][output])
+    os.close(pipes[0][outpipe])
     for pipe in pipes:
-        os.close(pipe[input])
+        os.close(pipe[inpipe])
 
     return int(result)
 
@@ -152,8 +150,8 @@ def parse(str):
     return [int(c) for c in str.split(',')]
 
 if __name__ == "__main__":
-    with open(sys.argv[1], 'r') as file:
-        program = load(file)
+    with open(sys.argv[1], 'r') as fh:
+        program = load(fh)
 
     if len(sys.argv) > 2:
         phases = parse(sys.argv[2])

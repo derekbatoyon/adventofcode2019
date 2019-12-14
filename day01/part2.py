@@ -1,8 +1,12 @@
-# usage: python part2.py < <list of modules>
+# usage:
+#   python part2.py [file ...]
+#
+# The file operands are processed in command-line order.  If file is a single
+# dash (`-') or absent, reads from the standard input.
 
+import fileinput
 import functools
 import operator
-import sys
 
 def calculate(arg):
     mass = int(arg.strip())
@@ -16,4 +20,4 @@ def calculate(arg):
     return total
 
 if __name__ == "__main__":
-    print functools.reduce(operator.add, [calculate(arg) for arg in sys.stdin])
+    print functools.reduce(operator.add, [calculate(arg) for arg in fileinput.input()])

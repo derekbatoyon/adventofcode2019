@@ -1,6 +1,10 @@
 # usage:
-#   python part2.py <positions>
+#   python part2.py [file ...]
+#
+# The file operands are processed in command-line order.  If file is a single
+# dash (`-') or absent, reads from the standard input.
 
+import fileinput
 import fractions
 import functools
 import re
@@ -10,10 +14,8 @@ def parse(string):
     result = re.match('<x=([+-]?\d+),\s*y=([+-]?\d+),\s*z=([+-]?\d+)>', string)
     return [int(i) for i in result.group(1, 2, 3)]
 
-def load(filename):
-    with open(filename, 'r') as fh:
-        positions = [parse(line) for line in fh]
-    return positions
+def load(fh):
+    return [parse(line) for line in fh]
 
 def pairs(n):
     p = []
@@ -55,7 +57,7 @@ def lcm(a,b):
     return (a*b) / fractions.gcd(a,b)
 
 if __name__ == "__main__":
-    positions = load(sys.argv[1])
+    positions = load(fileinput.input())
     d = len(positions[0])
 
     periods = []

@@ -1,5 +1,5 @@
 # usage:
-#   python part2.py <image width> <image height> <image file> <output image>
+#   python part2.py width height image_file output_image
 
 from PIL import Image
 
@@ -47,10 +47,10 @@ if __name__ == "__main__":
     pixels = width * height
 
     layers = []
-    with open(sys.argv[3]) as input:
+    with open(sys.argv[3]) as fh:
         count = 0
         while True:
-            layer = input.read(pixels).strip()
+            layer = fh.read(pixels).strip()
             if len(layer) == 0:
                 break
             count = count + 1

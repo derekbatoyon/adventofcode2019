@@ -1,7 +1,14 @@
 # usage:
-#   python part2.py <map> [focus]
+#   python part2.py [x,y] [file ...]
+#
+# The file operands are processed in command-line order.  If file is a single
+# dash (`-') or absent, reads from the standard input.  If the focus is not
+# specified in the input, then it must be given on the command line (via x,y).
+# Otherwise, the input will take precedence.
 
+import fileinput
 import math
+import re
 import sys
 
 def calculate_direction(p, q):
@@ -21,22 +28,34 @@ def calculate_distance(p, q):
     y2 = q[1]
     return math.sqrt(math.pow(y2 - y1, 2) + math.pow(x2 - x1, 2))
 
-def load(filename):
+def load(fh):
     points = []
     focus = None
-    with open(filename, 'r') as file:
-        for y, line in enumerate(file):
-            for x, character in enumerate(line):
-                if character == '#':
-                    points.append((x, y))
-                if character == 'X':
-                    focus = (x, y)
+    for y, line in enumerate(fh):
+        for x, character in enumerate(line):
+            if character == '#':
+                points.append((x, y))
+            if character == 'X':
+                focus = (x, y)
     return points, focus
 
+def parse_focus(str):
+    result = re.match('(\d+),(\d+)$', str)
+    if result:
+        return [int(i) for i in result.group(1, 2)]
+    return None
+
 if __name__ == "__main__":
-    points, focus = load(sys.argv[1])
+    cmd_focus = None
+    for index, arg in enumerate(sys.argv):
+        cmd_focus = parse_focus(arg)
+        if cmd_focus:
+            del sys.argv[index]
+            break
+
+    points, focus = load(fileinput.input())
     if focus is None:
-        focus = [int(i) for i in sys.argv[2].split(',')]
+        focus = cmd_focus
 
     print >> sys.stderr, "focus:", focus
 

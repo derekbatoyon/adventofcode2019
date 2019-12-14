@@ -1,5 +1,5 @@
 # usage:
-#   python part1.py <program>
+#   python part2.py program_file
 
 from threading import Thread
 
@@ -28,9 +28,9 @@ joystick_right = '1'
 def write_line(fd, arg):
     os.write(fd, "{}\n".format(arg))
 
-def load(file):
+def load(fh):
     program = []
-    for line in file:
+    for line in fh:
         for value in line.split(','):
             if len(value.strip()) > 0:
                 program.append(int(value))
@@ -105,10 +105,10 @@ def run(program, input_fd, output_fd):
             index = index + 4
         elif opcode == 3:
             result_index = get(index+1)
-            input = infile.readline()
-            if len(input) == 0:
+            inp = infile.readline()
+            if len(inp) == 0:
                 break
-            setters[mode1](result_index, int(input))
+            setters[mode1](result_index, int(inp))
             index = index + 2
         elif opcode == 4:
             write_line(output_fd, str(getters[mode1](program[index+1])))
@@ -185,8 +185,8 @@ def calculate_move(ball, padl):
         return joystick_neutral
 
 if __name__ == "__main__":
-    with open(sys.argv[1], 'r') as file:
-        program = load(file)
+    with open(sys.argv[1], 'r') as fh:
+        program = load(fh)
 
     (game_input, controller_output) = os.pipe()
     (screen_input, game_output) = os.pipe()
